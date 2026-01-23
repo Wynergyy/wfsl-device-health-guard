@@ -1,0 +1,19 @@
+{
+  "name": "wfsl-device-health-guard",
+  "version": "0.1.0",
+  "description": "WFSL Device Health Guard",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "build": "tsc",
+    "probe": "node dist/index.js probe",
+    "schema:validate": "node scripts/validate-schema.js",
+    "proofgate:verify": "node scripts/proofgate-verify.js",
+    "proofgate:bundle": "node scripts/proofgate-bundle.js",
+    "converge": "npm run build && npm run probe && npm run schema:validate && npm run proofgate:verify && npm run proofgate:bundle"
+  },
+  "dependencies": {
+    "ajv": "^8.17.1",
+    "ajv-formats": "^3.0.1"
+  }
+}
