@@ -1,0 +1,8 @@
+{
+  "wfsl": {
+    "component": "wfsl-device-health-guard",
+    "phase": "phase-1",
+    "type": "probe"
+  },
+  "freeze": false
+}
