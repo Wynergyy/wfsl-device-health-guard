@@ -1,0 +1,59 @@
+name: WFSL RepoGuard Phase-1 Verification
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: ["**"]
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Import WFSL GPG public key
+        run: |
+          cat << 'EOF' > wfsl.asc
+          -----BEGIN PGP PUBLIC KEY BLOCK-----
+
+          mDMEaVXjKxYJKwYBBAHaRw8BAQdADdBVoYDWU8gN6xmgE8PSSFeFu+6DlIxQhEcH
+          uMXefwq0GlBhdWwgV3lubiA8d2ZzbEBwcm90b24ubWU+iJkEExYKAEEWIQTtudNT
+          79xEaemmJrZ9tYZ5Hu6Z8AUCaVXkBAIbAwUJFRgAAAULCQgHAgIiAgYVCgkICwIE
+          FgIDAQIeBwIXgAAKCRB9tYZ5Hu6Z8HqmAP4rLzRONJIHo1w4AUYcnozzZ2m5Vm8B
+          Q7gEKlRbGO9qXwD/ZhV1ZP0Ec2qKzEHP+a3JY3EVd3YY3kvcQ5KSvP+rCwC4OARp
+          VeMrEgorBgEEAZdVAQUBAQdAY+lBdf7CcqGlkUGSznshdtcGOMnQ7ep71jaapfuC
+          kVkDAQgHiH4EGBYKACYWIQTtudNT79xEaemmJrZ9tYZ5Hu6Z8AUCaVXjKwIbDAUJ
+          FRgAAAAKCRB9tYZ5Hu6Z8IUmAP9xBh12OHPE5CdLHq5BseS4I93i5EDdWc4v9d6/
+          +kzIaAD/detBH4A+4nD8ZuG91snlgXqYH71sePdKm/FaiegO0gs=
+          =zYx7
+          -----END PGP PUBLIC KEY BLOCK-----
+          EOF
+          gpg --import wfsl.asc
+
+      - name: Verify signed HEAD commit
+        run: |
+          git log --show-signature -1 | tee signature.txt
+          grep -q "Good signature" signature.txt
+
+      - name: Run RepoGuard Phase-1 verifier
+        run: |
+          node src/index.ts | tee repo-guard.verdict.json
+
+      - name: Upload RepoGuard verdict
+        uses: actions/upload-artifact@v4
+        with:
+          name: repo-guard-verdict
+          path: repo-guard.verdict.json
